@@ -14,7 +14,7 @@
 M=0
 @R1
 D=M
-@maxcount
+@count
 M=D
 @END
 D;JEQ
@@ -23,7 +23,7 @@ D;JEQ
   D=M
   @R2
   M=M+D
-  @maxcount
+  @count
   M=M-1
   D=M
   @END
