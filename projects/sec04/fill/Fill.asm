@@ -41,11 +41,16 @@ M=D
   // value in register & 0000000000000000
   @nowscreen
   A=M
-  0;JMP
   D=M
   @0
   D=D&A
+  @nowscreen
+  A=M
   M=D
+
+  @nowscreen
+  M=M+1
+
   @colcount
   M=M-1
   D=M
@@ -57,15 +62,13 @@ M=D
   D=M
   @RESETCOLWHITE
   D;JEQ
-  @nowscreen
-  M=M+1
   @WHITE
   0;JMP
 
 // reset col count and decrement row count
 // if rowcount == 0, jump to reset row count
 (RESETCOLWHITE)
-  @16
+  @32
   D=A
   @colcount
   M=D
@@ -78,10 +81,16 @@ M=D
   0;JMP
 
 (RESETROW)
-  @16
+  @256
   D=A
   @rowcount
   M=D
+
+  @SCREEN
+  D=A
+  @nowscreen
+  M=D
+
   @LOOP
   0;JMP
 
@@ -90,11 +99,17 @@ M=D
   // value in register | 1111111111111111
   @nowscreen
   A=M
-  0;JMP
   D=M
-  @1
-  D=D|A
+  @0
+  D=D&A
+  D=!D
+  @nowscreen
+  A=M
   M=D
+
+  @nowscreen
+  M=M+1
+
   @colcount
   M=M-1
   D=M
@@ -106,15 +121,13 @@ M=D
   D=M
   @RESETCOLBLACK
   D;JEQ
-  @nowscreen
-  M=M+1
   @BLACK
   0;JMP
 
 // reset col count and decrement row count
 // if rowcount == 0, jump to reset row count
 (RESETCOLBLACK)
-  @16
+  @32
   D=A
   @colcount
   M=D
