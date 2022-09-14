@@ -1,0 +1,47 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/05/Memory.hdl
+
+/**
+ * The complete address space of the Hack computer's memory,
+ * including RAM and memory-mapped I/O. 
+ * The chip facilitates read and write operations, as follows:
+ *     Read:  out(t) = Memory[address(t)](t)
+ *     Write: if load(t-1) then Memory[address(t-1)](t) = in(t-1)
+ * In words: the chip always outputs the value stored at the memory 
+ * location specified by address. If load==1, the in value is loaded 
+ * into the memory location specified by address. This value becomes 
+ * available through the out output from the next time step onward.
+ * Address space rules:
+ * Only the upper 16K+8K+1 words of the Memory chip are used. 
+ * Access to address>0x6000 is invalid. Access to any address in 
+ * the range 0x4000-0x5FFF results in accessing the screen memory 
+ * map. Access to address 0x6000 results in accessing the keyboard 
+ * memory map. The behavior in these addresses is described in the 
+ * Screen and Keyboard chip specifications given in the book.
+ */
+
+CHIP Memory {
+    IN in[16], load, address[15];
+    OUT out[16];
+
+    PARTS:
+    // Put your code here:
+    // whether accessing RAM16K or not
+    // address[14]: most left, address[0]: most right
+    DMux(in=load,sel=address[14],a=loadRAM16K,b=loadNotRAM16K);
+    RAM16K(in=in,load=loadRAM16K,address=address[0..13],out=outRAM16K);
+
+    // whether accessing RAM4K or not
+    DMux(in=loadNotRAM16K,sel=address[13],a=loadRAM4K,b=loadNotRAM4K);
+    // whether accessing first RAM4K or not
+    DMux(in=loadRAM4K,sel=address[12],a=load4KFirst,b=load4KSecond);
+    RAM4K(in=in,load=load4KFirst,address=address[0..11],out=outRAM4KFirst);
+    RAM4K(in=in,load=load4KSecond,address=address[0..11],out=outRAM4KSecond);
+
+    Register(in=in,load=loadNotRAM4K,out=outRegister);
+    
+    Mux8Way16(a=outRAM16K,b=outRAM16K,c=outRAM16K,d=outRAM16K,e=outRAM4KFirst,f=outRAM4KSecond,g=outRegister,h=in,sel=address[12..14],out=out);
+}
+
