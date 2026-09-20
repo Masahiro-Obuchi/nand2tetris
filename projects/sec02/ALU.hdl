@@ -7,7 +7,7 @@
  * The ALU (Arithmetic Logic Unit).
  * Computes one of the following functions:
  * x+y, x-y, y-x, 0, 1, -1, x, y, -x, -y, !x, !y,
- * x+1, y+1, x-1, y-1, x&y, x|y on two 16-bit inputs, 
+ * x+1, y+1, x-1, y-1, x&y, x|y on two 16-bit inputs,
  * according to 6 input bits denoted zx,nx,zy,ny,f,no.
  * In addition, the ALU computes two 1-bit outputs:
  * if the ALU output == 0, zr is set to 1; otherwise zr is set to 0;
@@ -27,8 +27,8 @@
 // if (out < 0) set ng = 1
 
 CHIP ALU {
-    IN  
-        x[16], y[16],  // 16-bit inputs        
+    IN
+        x[16], y[16],  // 16-bit inputs
         zx, // zero the x input?
         nx, // negate the x input?
         zy, // zero the y input?
@@ -36,26 +36,31 @@ CHIP ALU {
         f,  // compute out = x + y (if 1) or x & y (if 0)
         no; // negate the out output?
 
-    OUT 
+    OUT
         out[16], // 16-bit output
         zr, // 1 if (out == 0), 0 otherwise
         ng; // 1 if (out < 0),  0 otherwise
 
     PARTS:
-   // Put you code here:
+    // Put you code here:
     Mux16(a=x,b[0..15]=false,sel=zx,out=x1);
-    Not16(in=x1,out=xnot);
-    Mux16(a=x1,b=xnot,sel=nx,out=x2);
+    Not16(in=x1,out=notX);
+    Mux16(a=x1,b=notX,sel=nx,out=x2);
+
     Mux16(a=y,b[0..15]=false,sel=zy,out=y1);
-    Not16(in=y1,out=ynot);
-    Mux16(a=y1,b=ynot,sel=ny,out=y2);
-    Add16(a=x2,b=y2,out=x2addy2);
-    And16(a=x2,b=y2,out=x2andy2);
-    Mux16(a=x2andy2,b=x2addy2,sel=f,out=x2y2);
-    Not16(in=x2y2, out=notx2y2);
-    Mux16(a=x2y2,b=notx2y2,sel=no,out[0..7]=outHalf1,out[8..15]=outHalf2,out[15]=ng,out=out);
-    Or8Way(in=outHalf1,out=outHalf1Or);
-    Or8Way(in=outHalf2,out=outHalf2Or);
-    Or(a=outHalf1Or,b=outHalf2Or,out=notZr);
-    Not(in=notZr,out=zr);
+    Not16(in=y1,out=notY);
+    Mux16(a=y1,b=notY,sel=ny,out=y2);
+
+    And16(a=x2,b=y2,out=x2AndY2);
+    Add16(a=x2,b=y2,out=x2AddY2);
+    Mux16(a=x2AndY2,b=x2AddY2,sel=f,out=fres);
+
+    Not16(in=fres,out=notFres);
+
+    Mux16(a=fres,b=notFres,sel=no,out[0..7]=outFirstHalf,out[8..15]=outSecondHalf,out[15]=ng,out=out);
+
+    Or8Way(in=outFirstHalf,out=firstHalfOr);
+    Or8Way(in=outSecondHalf,out=secondHalfOr);
+    Or(a=firstHalfOr,b=secondHalfOr,out=notZero);
+    Not(in=notZero,out=zr);
 }
